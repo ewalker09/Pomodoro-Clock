@@ -1,115 +1,213 @@
-function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}const nums = [7, 8, 9, 4, 5, 6, 1, 2, 3, 0];
-const ops = ['/', '*', '-', '+'];
-const ids = {
-  7: 'seven',
-  8: 'eight',
-  9: 'nine',
-  4: 'four',
-  5: 'five',
-  6: 'six',
-  1: 'one',
-  2: 'two',
-  3: 'three',
-  0: 'zero',
-  '/': 'divide',
-  '*': 'multiply',
-  '-': 'subtract',
-  '+': 'add' };
+function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}const audio = document.getElementById('beep');
 
-
-class App extends React.Component {constructor(...args) {super(...args);_defineProperty(this, "state",
-    {
-      lastPressed: undefined,
-      calc: '0',
-      operation: undefined });_defineProperty(this, "handleClick",
+class App extends React.Component {
 
 
 
-    e => {
-      const { calc, lastPressed } = this.state;
-      const { innerText } = e.target;
 
-      console.log(innerText);
 
-      switch (innerText) {
-        case 'AC':{
+
+
+
+  constructor(props) {
+    super(props);_defineProperty(this, "state", { breakCount: 5, sessCount: 25, clockCount: 25 * 60, currentTime: 'Session', isPlaying: false });_defineProperty(this, "handlePlayPause",
+
+
+
+
+
+
+
+
+    () => {
+      const { isPlaying } = this.state;
+
+      if (isPlaying) {
+        clearInterval(this.loop);
+        this.setState({
+          isPlaying: false });
+
+      } else {
+        this.setState({
+          isPlaying: true });
+
+
+        this.loop = setInterval(() => {
+          const { clockCount, currentTimer, breakCount, sessionCount } = this.state;
+
+          if (clockCount === 0) {
             this.setState({
-              calc: '0' });
+              currentTimer: currentTimer === 'Session' ? 'Break' : 'Session',
 
-            break;
-          }
-        case '=':{
-            const evaluated = eval(calc);
+              clockCount: currentTimer === 'Session' ? breakCount * 60 : sessionCount * 60 });
+
+
+            audio.play();
+
+          } else {
             this.setState({
-              calc: evaluated });
+              clockCount: clockCount - 1 });
 
-            break;
           }
-        case '.':{
-            const splitted = calc.split(/[\+\-\*\/]/);
-            const last = splitted.slice(-1)[0];
 
-            if (!last.includes('.')) {
-              this.setState({
-                calc: calc + '.' });
+        }, 1000);
+      }
+    });_defineProperty(this, "handleReset",
 
-            }
-
-            break;
-          }
-        default:{
-            let e = undefined;
-            // check for other operations
-            if (ops.includes(innerText)) {
-              if (ops.includes(lastPressed) && innerText !== '-') {
-                const lastNumberIdx = calc.split('').reverse().findIndex(char => char !== ' ' && nums.includes(+char));
-                e = calc.slice(0, calc.length - lastNumberIdx) + ` ${innerText} `;
-              } else {
-                e = `${calc} ${innerText} `;
-              }
-            } else {
-              e = calc === '0' ? innerText : calc + innerText;
-            }
-
-            this.setState({
-              calc: e,
-              lastPressed: innerText });
-
-          }}
-
+    () => {
       this.setState({
-        lastPressed: innerText });
+        breakCount: 5,
+        sessCount: 25,
+        clockCount: 25 * 60,
+        currentTime: 'Session',
+        isPlaying: false });
 
-    });}
+      clearInterval(this.loop);
+
+      audio.pause();
+      audio.currentTime = 0;
+    });_defineProperty(this, "convertToTime",
+
+    count => {
+      let mins = Math.floor(count / 60);
+      let secs = count % 60;
+
+      mins = mins < 10 ? '0' + mins : mins;
+
+      secs = secs < 10 ? '0' + secs : secs;
+
+      return `${mins}:${secs}`;
+    });_defineProperty(this, "handleBreakDecrease",
+
+    () => {
+      const { breakCount, isPlaying, currentTime } = this.state;
+
+      if (breakCount > 1) {
+        if (!isPlaying && currentTime === 'Break') {
+          this.setState({
+            breakCount: breakCount - 1,
+            clockCount: (breakCount - 1) * 60 });
+
+        } else {
+          this.setState({
+            breakCount: breakCount - 1 });
+
+        }
+      }
+    });_defineProperty(this, "handleBreakIncrease",
+
+    () => {
+      const { breakCount, isPlaying, currentTime } = this.state;
+
+      if (breakCount < 60) {
+        if (!isPlaying && currentTime === 'Break') {
+          this.setState({
+            breakCount: breakCount + 1,
+            clockCount: (breakCount + 1) * 60 });
+
+        } else {
+          this.setState({
+            breakCount: breakCount + 1 });
+
+        }
+      }
+    });_defineProperty(this, "handleSessDecrease",
+
+    () => {
+      const { sessCount, isPlaying, currentTime } = this.state;
+
+      if (sessCount > 1) {
+        if (!isPlaying && currentTime === 'Session') {
+          this.setState({
+            sessCount: sessCount - 1,
+            clockCount: (sessCount - 1) * 60 });
+
+        } else {
+          this.setState({
+            sessCount: sessCount - 1 });
+
+        }
+
+      }
+    });_defineProperty(this, "handleSessIncrease",
+
+    () => {
+      const { sessCount, isPlaying, currentTime } = this.state;
+
+      if (sessCount < 60) {
+        if (!isPlaying && currentTime === 'Session') {
+          this.setState({
+            sessCount: sessCount + 1,
+            clockCount: (sessCount + 1) * 60 });
+
+        } else {
+          this.setState({
+            sessCount: sessCount + 1 });
+
+        }
+      }
+    });this.loop = undefined;}componentWillUnmount() {clearInterval(this.loop);}
 
   render() {
-    const { currentNumber, calc } = this.state;
+
+    const { breakCount, sessCount, clockCount, currentTime, isPlaying } = this.state;
+
+    const breakProps = {
+      title: 'Break',
+      count: breakCount,
+      handleDecrease: this.handleBreakDecrease,
+      handleIncrease: this.handleBreakIncrease };
+
+
+    const sessionProps = {
+      title: 'Session',
+      count: sessCount,
+      handleDecrease: this.handleSessDecrease,
+      handleIncrease: this.handleSessIncrease };
+
+
     return /*#__PURE__*/(
-      React.createElement("div", { className: "calculator" }, /*#__PURE__*/
-      React.createElement("p", { style: { position: 'absolute', top: 0 } }, JSON.stringify(this.state, null, 2)), /*#__PURE__*/
-      React.createElement("div", { id: "display", className: "display" },
-      calc), /*#__PURE__*/
+      React.createElement("div", null, /*#__PURE__*/
+      React.createElement("div", { className: "flex" }, /*#__PURE__*/
+      React.createElement(SetTimer, breakProps), /*#__PURE__*/
+      React.createElement(SetTimer, sessionProps)), /*#__PURE__*/
 
-      React.createElement("div", { className: "nums-container" }, /*#__PURE__*/
-      React.createElement("button", { className: "big-h light-gray ac", onClick: this.handleClick, id: "clear" }, "AC"),
-      nums.map((num, idx) => /*#__PURE__*/
-      React.createElement("button", { className: `dark-gray ${num === 0 && `big-h`}`, key: num, onClick: this.handleClick, id: ids[num] },
-      num)), /*#__PURE__*/
+      React.createElement("div", { className: "clock-container" }, /*#__PURE__*/
+      React.createElement("h1", { id: "timer-label" }, currentTime), /*#__PURE__*/
+      React.createElement("span", { id: "timer-left" }, this.convertToTime(clockCount)), /*#__PURE__*/
 
+      React.createElement("div", { className: "flex;" }, /*#__PURE__*/
+      React.createElement("button", { id: "start-stop", onClick: this.handlePlayPause }, /*#__PURE__*/
+      React.createElement("i", { className: `fas fa-${isPlaying ? 'pause' : 'play'}` })), /*#__PURE__*/
 
-      React.createElement("button", { className: "light-gray", onClick: this.handleClick, id: "decimal" }, ".")), /*#__PURE__*/
-
-      React.createElement("div", { className: "ops-container" },
-      ops.map((op, idx) => /*#__PURE__*/
-      React.createElement("button", { className: "orange", key: op, onClick: this.handleClick, id: ids[op] },
-      op)), /*#__PURE__*/
+      React.createElement("button", { id: "reset", onClick: this.handleReset }, /*#__PURE__*/
+      React.createElement("i", { className: "fas fa-redo" }))))));
 
 
-      React.createElement("button", { className: "orange", onClick: this.handleClick, id: "equals" }, "="))));
 
 
 
   }}
 
+
+const SetTimer = props => {
+
+  const id = props.title.toLowerCase();
+
+  return /*#__PURE__*/(
+    React.createElement("div", { className: "timer-container" }, /*#__PURE__*/
+    React.createElement("h1", { id: `${id}-label` }, props.title, " Length"), /*#__PURE__*/
+    React.createElement("div", { className: "flex actions-wrapper" }, /*#__PURE__*/
+    React.createElement("button", { id: `${id}-decrement`, onClick: props.handleDecrease }, /*#__PURE__*/
+    React.createElement("i", { className: "fas fa-minus" })), /*#__PURE__*/
+
+    React.createElement("span", { id: `${id}-length` }, props.count), /*#__PURE__*/
+    React.createElement("button", { id: `${id}-increment`, onClick: props.handleIncrease }, /*#__PURE__*/
+    React.createElement("i", { className: "fas fa-plus" })))));
+
+
+
+
+};
 
 ReactDOM.render( /*#__PURE__*/React.createElement(App, null), document.getElementById('app'));
